@@ -2,6 +2,7 @@ import os
 import sys
 from google.cloud import bigquery
 
+
 def verify_bigquery_connection():
     """
     Verifies connectivity to BigQuery and counts records in the specified table.
@@ -17,20 +18,21 @@ def verify_bigquery_connection():
         # Using backticks for the table ID to handle project.dataset.table format correctly
         query = f"SELECT COUNT(*) as total FROM `{table_id}`"
         query_job = client.query(query)
-        
+
         # This will raise an exception if the connection fails or table doesn't exist
         results = query_job.result()
 
         for row in results:
             count = row.total
             print("--------------------------------------------------")
-            print(f"Connection Status: SUCCESS")
+            print("Connection Status: SUCCESS")
             print(f"Table '{table_id}' count: {count}")
             print("--------------------------------------------------")
-            
+
     except Exception as e:
         print(f"Error connecting to BigQuery: {e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     verify_bigquery_connection()

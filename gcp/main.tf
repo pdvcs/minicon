@@ -54,13 +54,13 @@ resource "google_service_networking_connection" "private_vpc_connection" {
 # 2. ALLOYDB (The Serving Layer)
 # ==============================================================================
 resource "google_alloydb_cluster" "vuln_cluster" {
-  cluster_id = "vuln-consolidation-cluster"
-  location   = var.region
+  cluster_id          = "vuln-consolidation-cluster"
+  location            = var.region
   deletion_protection = false
   network_config {
     network = google_compute_network.vpc_network.id
   }
-  
+
   initial_user {
     user     = "postgres"
     password = var.db_password
@@ -125,7 +125,7 @@ resource "google_project_iam_member" "bq_job_user" {
 resource "google_compute_instance" "alloydb_vm" {
   name         = "alloydb-access-vm"
   machine_type = "e2-small"
-  zone         = "${var.region}-a"  # Adjust zone suffix as needed
+  zone         = "${var.region}-a" # Adjust zone suffix as needed
 
   boot_disk {
     initialize_params {
@@ -138,7 +138,7 @@ resource "google_compute_instance" "alloydb_vm" {
   network_interface {
     network    = google_compute_network.vpc_network.id
     subnetwork = google_compute_subnetwork.subnet.id
-    
+
     # No external IP for better security - access via IAP
     # If you need external IP, uncomment the following:
     # access_config {}
@@ -180,7 +180,7 @@ resource "google_compute_firewall" "allow_iap_ssh" {
 
   # IAP IP range
   source_ranges = ["35.235.240.0/20"]
-  
+
   target_tags = ["alloydb-client"]
 }
 
@@ -201,17 +201,17 @@ output "alloydb_connection_command" {
 # 3. BIGQUERY (The Historical Archive)
 # ==============================================================================
 resource "google_bigquery_dataset" "vuln_archive" {
-  dataset_id                  = "vulnerability_archive"
-  friendly_name               = "Scan History"
-  description                 = "Raw immutable scan logs retained for 6 months"
-  location                    = var.region
+  dataset_id    = "vulnerability_archive"
+  friendly_name = "Scan History"
+  description   = "Raw immutable scan logs retained for 6 months"
+  location      = var.region
   # default_table_expiration_ms = 15778800000 # ~6 months in ms
   default_table_expiration_ms = 2592000000 # 30 days in ms
 }
 
 resource "google_bigquery_table" "scan_logs" {
-  dataset_id = google_bigquery_dataset.vuln_archive.dataset_id
-  table_id   = "raw_scan_logs"
+  dataset_id          = google_bigquery_dataset.vuln_archive.dataset_id
+  table_id            = "raw_scan_logs"
   deletion_protection = false
 
   # Partition by Ingestion Time for efficient cost management
